@@ -1,0 +1,144 @@
+body {
+  font: 300 56px "Helvetica Neue";
+  height: 800px;
+  /* height: 640px; */
+  /* margin: 80px 160px 80px 160px; */
+  overflow: hidden;
+  position: relative;
+  /* width: 960px; */
+  width: 100%;
+}
+
+a:link, a:visited {
+  color: #777;
+  text-decoration: none;
+}
+
+a:hover {
+  color: #666;
+}
+
+
+blockquote {
+  margin: 0;
+  margin-top: 20%;
+  /* margin-top: 10px; */
+  margin-bottom: 10px;
+  margin-left: 50px;
+  padding-left: 15px;
+  border-left: 3px solid #ccc;
+}
+
+.author {
+  margin-left: 50px;
+  color: #555;
+}
+
+.center {
+  text-align: center;
+  margin: auto;
+}
+
+.vcenter {
+  margin-top: 20%;
+}
+
+/* blockquote:before { */
+/*   content: "â€œ"; */
+/*   position: absolute; */
+/*   left: -.4em; */
+/* } */
+/*  */
+/* blockquote:after { */
+/*   content: "â€"; */
+/*   position: absolute; */
+/* } */
+
+body > ul {
+  margin: 0;
+  padding: 0;
+}
+
+.highlight {
+  background-color: #FFFF88;
+}
+
+h1 {
+  font-size: 64px;
+  font-weight: bold;
+}
+
+h1, h2, h3 {
+  margin: 0;
+}
+
+h2, h3 {
+  text-align: right;
+  font-size: inherit;
+  position: absolute;
+  bottom: 0;
+  right: 0;
+}
+
+h2 {
+  font-size: 24px;
+  position: absolute;
+}
+
+h3 {
+  bottom: -20px;
+  font-size: 18px;
+}
+
+.invert {
+  background: #1f1f1f;
+  color: #dcdccc;
+}
+
+.invert h2, .invert h3 {
+  color: #7f9f7f;
+}
+
+.string, .regexp {
+  color: #f39;
+}
+
+.keyword {
+  color: #00c;
+}
+
+.comment {
+  color: #777;
+  font-style: oblique;
+}
+
+.number {
+  color: #369;
+}
+
+.class, .special {
+  color: #1181B8;
+}
+
+body > svg {
+  position: absolute;
+  top: -80px;
+  left: -160px;
+}
+
+.codeWall {
+  width: 100%;
+  height: 100%;
+  position: absolute;
+  top: 0;
+  left: 0;
+  background-color: black;
+  border-radius: 15px;
+  opacity: 0.9;
+  color: white;
+  z-index: 100;
+}
+
+.hide {
+  display: none;
+}
