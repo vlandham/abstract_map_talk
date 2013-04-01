@@ -61,12 +61,12 @@
         margin: 0;
       }
 
-      path.state {
+      path.zip {
         stroke: #666;
         stroke-width: .5;
       }
 
-      path.state:hover {
+      path.zip:hover {
         stroke: #000;
       }
 
@@ -90,7 +90,7 @@
   </head>
   <body>
     <div id="container">
-      <h1>Cartograms with d3 &amp; TopoJSON</h1>
+      <h1>KC Cartograms</h1>
       <form>
         <p>
           <label>Scale by <select id="field"></select></label>
@@ -102,31 +102,6 @@
         <img id="placeholder" alt="placeholder image for old browsers" src="placeholder.png">
         <svg id="map"></svg>
       </div>
-      <div id="about">
-        <h2>About</h2>
-        <p><a href="cartogram.js">cartogram.js</a> is a JavaScript implementation of
-        <a href="http://chrisman.scg.ulaval.ca/G360/dougenik.pdf">an algoritm to construct continuous area cartograms</a>,
-        by James A. Dougenik, Nicholas R. Chrisman and Duane R. Niemeyer,
-        &copy;1985 by the Association of American Geographers. This example combines
-        <a href="http://github.com/mbostock/topojson">TopoJSON</a>-encoded 
-        boundaries of the United zips from
-        <a href="http://www.naturalearthdata.com/downloads/110m-cultural-vectors/">Natural Earth</a>
-        with
-        <a href="http://www.census.gov/popest/data/state/totals/2011/">2011 US Census population estimates</a>
-        to size each state proportionally.</p>
-        
-        <p>There&rsquo;s also a
-        <a class="hashish" href="?segmentized">segmentized topology</a>,
-        which distorts the shapes more fluidly than the
-        <a class="hashish" href="?">original</a>.</p>
-
-        <p>Designed and built but <a href="http://stamen.com/studio/shawn">Shawn Allen</a> at
-        <a href="http://stamen.com">Stamen</a>.
-        <a href="http://d3js.org">d3.js</a> does most of the heavy lifting;
-        colors by <a href="http://colorbrewer2.org">colorbrewer</a>.</p>
-      </div>
-
-      <a href="https://github.com/shawnbot/d3-cartogram/"><img style="position: absolute; top: 0; right: 0; border: 0;" src="https://s3.amazonaws.com/github/ribbons/forkme_right_gray_6d6d6d.png" alt="Fork me on GitHub"></a>
     </div>
     <script>
 
@@ -146,21 +121,15 @@
             {name: "(no scale)", id: "none"},
             // {name: "Census Population", id: "censuspop", key: "CENSUS%dPOP", years: [2010]},
             // {name: "Estimate Base", id: "censuspop", key: "ESTIMATESBASE%d", years: [2010]},
-            {name: "Population Estimate", id: "popest", key: "POPESTIMATE%d"},
+            {name: "Total Housing Units", id: "total_units", key: "HC01_VC03", format: "+,"},
+            {name: "Occupied Housing Units", id: "occupied_units", key: "HC01_VC04", format: "+,"},
+            {name: "Vacant Housing Units", id: "vacant_units", key: "HC01_VC05", format: "+,"},
+            {name: "Percent Vacant", id: "per_vac", key: "HC03_VC05", format: percent},
             {name: "Population Change", id: "popchange", key: "NPOPCHG_%d", format: "+,"},
             {name: "Births", id: "births", key: "BIRTHS%d"},
             {name: "Deaths", id: "deaths", key: "DEATHS%d"},
             {name: "Natural Increase", id: "natinc", key: "NATURALINC%d", format: "+,"},
-            {name: "Int'l Migration", id: "intlmig", key: "INTERNATIONALMIG%d", format: "+,"},
-            {name: "Domestic Migration", id: "domesticmig", key: "DOMESTICMIG%d", format: "+,"},
-            {name: "Net Migration", id: "netmig", key: "NETMIG%d", format: "+,"},
-            {name: "Residual", id: "residual", key: "RESIDUAL%d", format: "+,"},
-            {name: "Birth Rate", id: "birthrate", key: "RBIRTH%d", years: [2011], format: percent},
-            {name: "Death Rate", id: "deathrate", key: "RDEATH%d", years: [2011], format: percent},
-            {name: "Natural Increase Rate", id: "natincrate", key: "RNATURALINC%d", years: [2011], format: percent},
-            {name: "Int'l Migration Rate", id: "intlmigrate", key: "RINTERNATIONALMIG%d", years: [2011], format: percent},
-            {name: "Net Domestic Migration Rate", id: "domesticmigrate", key: "RDOMESTICMIG%d", years: [2011], format: percent},
-            {name: "Net Migration Rate", id: "netmigrate", key: "RNETMIG%d", years: [2011], format: percent},
+            {name: "Death Rate", id: "deathrate", key: "RDEATH%d", years: [2011], format: percent}
           ],
           years = [2010, 2011],
           fieldsById = d3.nest()
@@ -225,7 +194,7 @@
       }
 
       var proj = d3.geo.albersUsa()
-         .translate([-350, 600]).scale(16000);
+         .translate([-700, 700]).scale(25000);
       
      var  topology,
           geometries,
@@ -248,14 +217,15 @@
       //     url = ["data",
       //       segmentized ? "us-states-segmentized.topojson" : "us-states.topojson"
       //     ].join("/");
-      var url = "data/zipcodes_filter_topo.json"
+      var url = "data/zipcodes_filter_scoped_topo.json"
       d3.json(url, function(topo) {
         topology = topo;
-        geometries = topology.objects.zipcodes_filter.geometries;
-        d3.csv("data/nst_2011.csv", function(data) {
-          rawData = data;
+        geometries = topology.objects.zipcodes_filter_scoped.geometries;
+        all_ids = geometries.map(function(d) { return d.id;});
+        d3.csv("data/census_5year_housing_stats.csv", function(data) {
+          rawData = data.filter(function(d) { return (all_ids.indexOf(d["GEO.id2"]) != -1);});
           dataById = d3.nest()
-            .key(function(d) { return d.NAME; })
+            .key(function(d) { return d['GEO.id2']; })
             .rollup(function(d) { return d[0]; })
             .map(data);
           init();
@@ -270,7 +240,7 @@
         zips = zips.data(features)
           .enter()
           .append("path")
-            .attr("class", "state")
+            .attr("class", "zip")
             .attr("id", function(d,i) {
             return i;
             })
@@ -286,8 +256,8 @@
         stat.text("");
         body.classed("updating", false);
 
-        var features = carto.features(topology, geometries),
-            path = d3.geo.path()
+        var features = carto.features(topology, geometries);
+        var path = d3.geo.path()
               .projection(proj);
 
         zips.data(features)
@@ -298,8 +268,8 @@
             .attr("d", path);
 
         zips.select("title")
-          .text(function(d) {
-            return d.properties.NAME;
+        .text(function(d) {
+            return d.properties["GEO.id2"];
           });
       }
 
@@ -313,8 +283,8 @@
               : d3.format(field.format || ","),
             value = function(d) {
               return +d.properties[key];
-            },
-            values = zips.data()
+            };
+            var values = zips.data()
               .map(value)
               .filter(function(n) {
                 return !isNaN(n);
@@ -322,6 +292,7 @@
               .sort(d3.ascending),
             lo = values[0],
             hi = values[values.length - 1];
+            console.log("lo: " + lo + " hi: " + hi);
 
         var color = d3.scale.linear()
           .range(colors)
@@ -336,7 +307,13 @@
 
         // tell the cartogram to use the scaled values
         carto.value(function(d) {
-          return scale(value(d));
+          var scaled = scale(value(d));
+          if (isNaN(scaled)) {
+            return 1;
+          } else {
+            return scaled;
+          }
+
         });
 
         // generate the new features, pre-projected
@@ -346,7 +323,7 @@
         zips.data(features)
           .select("title")
             .text(function(d) {
-              return [d.properties.NAME, fmt(value(d))].join(": ");
+              return [d.properties["GEO.id2"], fmt(value(d))].join(": ");
             });
 
         zips.transition()
