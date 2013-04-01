@@ -25,8 +25,8 @@ root.showCity = (cityId) ->
   window.city_view.display_city()
 
 tract_ratio = (tract) ->
-  if tract.P003001 > 20
-    tract.P003003 / tract.P003001
+  if parseFloat(tract.P003001) > 20
+    parseFloat(tract.P003003) / parseFloat(tract.P003001)
   else
     0
 
@@ -50,6 +50,10 @@ class CityView
     @height = 650
     @csv_data = {}
     @color = null
+    @all_node = []
+    @xy = null
+    @path = null
+    @centered = null
 
     @vis = d3.select("#vis")
       .append("svg:svg")
@@ -60,7 +64,7 @@ class CityView
     @vis.append("svg:rect")
       .attr("width", @width)
       .attr("height", @height)
-
+    @vis = @vis.append("svg:g")
   setup_data: (csv) =>
     for tract in csv
       @csv_data[tract.GEOID] = tract
@@ -85,9 +89,26 @@ class CityView
     @force.start()
 
   zoom: (id) =>
-    node_index = @force.nodes().indexOf (d) ->
-      d.feature.properties['GEOID10'] == id
-    node = @force.nodes()[node_index]
+    k = 1
+    x = @width / 2
+    y = @height / 2
+    if id
+      k = 5
+      zoom_node = @all_node.filter (d) ->
+        d.tract_data['GEOID'] == id
+
+      zoom_node.attr('fill', 'red')
+      my_path = @path
+      zoom_node.each (d) ->
+        x = d.x
+        y = d.y
+        @centered = d
+
+    @vis.transition()
+      .duration(1000)
+      .attr("transform", "translate(#{@width/2}, #{@height/2})scale(#{k})translate(#{-x},#{-y})")
+
+
 
 
 
@@ -98,10 +119,10 @@ class CityView
     #   console.log("cant find #{id}")
 
 
-  display_city: () =>
-    xy = d3.geo.albersUsa()
+  display_city: () ->
+    @xy = d3.geo.albersUsa()
       .translate([@x,@y]).scale(@scale)
-    path = d3.geo.path().projection(xy)
+    @path = d3.geo.path().projection(@xy)
     @force = d3.layout.force().size([@width, @height])
 
     d3.csv "data/cities/#{@name}_race.csv", (csv) =>
@@ -111,7 +132,7 @@ class CityView
         links = []
 
         tracts.features.forEach (d, i) =>
-          centroid = path.centroid(d)
+          centroid = @path.centroid(d)
           centroid.x = centroid[0]
           centroid.y = centroid[1]
           centroid.feature = d
@@ -142,27 +163,26 @@ class CityView
         #   .attr("stroke", "#333")
         #   .attr("stroke-width", "0")
         #   .attr("stroke-opacity", 0.0)
-
-        node = @vis.selectAll("g")
+        my_path = @path
+        @all_node = @vis.selectAll("g")
           .data(nodes)
         .enter().append("svg:g")
           .attr("transform", (d) -> "translate(#{-d.x},#{-d.y})")
         .append("svg:path")
           .attr("transform", (d) -> "translate(#{-d.x},#{-d.y})")
-          .attr("d", (d) -> path(d.feature))
+          .attr("d", (d) -> my_path(d.feature))
           .attr("fill-opacity", 0.0)
           .attr("fill", (d) => @color_for(d.tract_data))
           .attr("stroke", "#222")
           .attr("stroke-width", 0)
           .attr("stroke-opacity", 0.0)
 
-        node.attr("transform", (d) -> "translate(#{d.x},#{d.y})")
+        @all_node.attr("transform", (d) -> "translate(#{d.x},#{d.y})")
 
-        node.transition()
+        @all_node.transition()
           .duration(1000)
           .attr("fill-opacity", 1.0)
-
-
+        
         tick_count = 0
 
         @force.on "tick", (e) =>
@@ -170,7 +190,7 @@ class CityView
           #   .attr("y1", (d) -> d.source.y)
           #   .attr("x2", (d) -> d.target.x)
           #   .attr("y2", (d) -> d.target.y)
-          node.attr("transform", (d) -> "translate(#{d.x},#{d.y})")
+          @all_node.attr("transform", (d) -> "translate(#{d.x},#{d.y})")
           tick_count += 1
           if tick_count > 150
             @force.stop()
@@ -198,7 +218,13 @@ $ ->
   root.step = (cur_step) ->
     if cur_step == 'start'
       window.city_view.start()
+    if cur_step == 'zoom_first'
+      window.city_view.zoom("20209043301")
+    if cur_step == 'zoom_op'
+      window.city_view.zoom("20091051200")
     if cur_step == 'zoom_current'
-      window.city_view.zoom('29095006500')
+      window.city_view.zoom("29095006500")
+    if cur_step == 'zoom_out'
+      window.city_view.zoom(null)
 
   
