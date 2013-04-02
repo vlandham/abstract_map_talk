@@ -6,21 +6,34 @@
     margin:auto;
   }
 circle {
-  fill: none;
+  /* fill: none; */
   stroke: steelblue;
 }
+
+path {
+  fill: #ccc;
+  stroke: #fff;
+  stroke-width: .5px;
+}
+
+#scale_title {
+  margin:auto;
+  text-align:center;
+  margin-top: -60px;
+}
+
 
 </style>
 <body>
       <form>
         <p>
           <label>Scale by <select id="field"></select></label>
-          <span id="status"></span>
         </p>
       </form>
       <div id="map-container">
         <svg id="map"></svg>
       </div>
+      <h2 id="scale_title"></h2>
     </div>
   
     <script src="lib/d3.v3.min.js"></script>
@@ -34,7 +47,7 @@ circle {
             return function(n) { return fmt(n) + "%"; };
           })(),
           fields = [
-            {name: "(no scale)", id: "none"},
+            {name: "No Scale", id: "none"},
             // {name: "Census Population", id: "censuspop", key: "CENSUS%dPOP", years: [2010]},
             // {name: "Estimate Base", id: "censuspop", key: "ESTIMATESBASE%d", years: [2010]},
             {name: "Total Housing Units", id: "total_units", key: "HC01_VC03", format: "+,"},
@@ -103,8 +116,21 @@ var svg = d3.select("#map-container svg")
         .key(function(d) { return d['GEO.id2']; })
         .rollup(function(d) { return d[0]; })
         .map(data);
+        
+        us.objects.zipcodes_filter_scoped.geometries.forEach(function(g) {
+          var geoData = dataById[g.id];
+          if(!geoData) {
+            console.log('no data');
+            } else {
+            g.properties = geoData;
+          }
+        });
 
-      
+        var paths = svg.selectAll("path")
+        .data(topojson.object(us, us.objects.zipcodes_filter_scoped).geometries)
+        .enter().append("path")
+        .attr("d", path);
+
         zips = svg.selectAll("circle")
         .data(topojson.object(us, us.objects.zipcodes_filter_scoped).geometries)
 
@@ -120,8 +146,30 @@ var svg = d3.select("#map-container svg")
           return this.href;
         });
     
+      function reset() {
+        stat.text("");
+        body.classed("updating", false);
 
-        function update() {
+        d3.select("#scale_title").html(field.name);
+        var path = d3.geo.path()
+              .projection(proj);
+
+        zips
+          .transition()
+            .duration(750)
+            .ease("linear")
+            .attr("fill", "#fafafa")
+            .attr("r", function(d) { return Math.sqrt(path.area(d) / Math.PI); });
+
+
+        zips.select("title")
+        .text(function(d) {
+            return d.properties["GEO.id2"];
+          });
+      }
+
+      function update() {
+
         var key = field.key.replace("%d", year),
             fmt = (typeof field.format === "function")
               ? field.format
@@ -130,6 +178,7 @@ var svg = d3.select("#map-container svg")
               return +d.properties[key];
             };
             console.log(key);
+            d3.select("#scale_title").html(field.name);
             var values = zips.data()
               .map(value)
               .filter(function(n) {
@@ -151,6 +200,12 @@ var svg = d3.select("#map-container svg")
           .domain([lo, hi])
           .range([1, 1000]);
           
+        zips
+          .transition()
+            .duration(750)
+            .ease("linear")
+            .attr("fill", function(d) { return color(+d.properties[key]);})
+            .attr("r", function(d) { return Math.sqrt(scale(+d.properties[key]) / Math.PI); });
       }    
 
       var deferredUpdate = (function() {

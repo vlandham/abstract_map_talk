@@ -141,6 +141,8 @@
           colors = colorbrewer.RdYlBu[3]
             .reverse()
             .map(function(rgb) { return d3.hsl(rgb); });
+      
+      var feature_save;
 
       var body = d3.select("body"),
           stat = d3.select("#status");
@@ -318,6 +320,7 @@
 
         // generate the new features, pre-projected
         var features = carto(topology, geometries).features;
+        feature_save = features;
 
         // update the data
         zips.data(features)
