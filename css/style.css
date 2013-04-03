@@ -43,17 +43,6 @@ blockquote {
   margin-top: 20%;
 }
 
-/* blockquote:before { */
-/*   content: "â€œ"; */
-/*   position: absolute; */
-/*   left: -.4em; */
-/* } */
-/*  */
-/* blockquote:after { */
-/*   content: "â€"; */
-/*   position: absolute; */
-/* } */
-
 body > ul {
   margin: 0;
   padding: 0;
