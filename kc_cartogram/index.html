@@ -4,10 +4,14 @@
     <title>Cartograms with d3 &amp; TopoJSON</title>
     <meta charset="utf-8">
     <meta property="og:image" content="placeholder.png">
+    <script type="text/javascript">
+      var substeps = ['vacant']
+    </script>
     <script src="lib/d3.v3.min.js"></script>
     <script src="lib/colorbrewer.js"></script>
     <script src="lib/topojson.js"></script>
     <script src="cartogram.js"></script>
+    <script type="text/javascript" src="../js/slide.js"></script>
     <style type="text/css">
 
       body {
@@ -20,7 +24,7 @@
 
       #container {
         width: 800px;
-        margin: 20px auto;
+        margin: auto;
       }
 
       h1 {
@@ -46,7 +50,7 @@
       }
 
       #map-container {
-        height: 500px;
+        height: 700px;
         text-align: center;
         position: relative;
         margin: 20px 0;
@@ -90,7 +94,7 @@
   </head>
   <body>
     <div id="container">
-      <h1>KC Cartograms</h1>
+      <h1>KC Cartogram</h1>
       <form>
         <p>
           <label>Scale by <select id="field"></select></label>
@@ -196,7 +200,7 @@
       }
 
       var proj = d3.geo.albersUsa()
-         .translate([-700, 700]).scale(25000);
+         .translate([-1450, 1150]).scale(42000);
       
      var  topology,
           geometries,
@@ -273,6 +277,17 @@
         .text(function(d) {
             return d.properties["GEO.id2"];
           });
+        }
+
+        function loadGeom() {
+          var key = field.id;
+          var url = "data/" + key +".json";
+          console.log(url);
+          d3.json(url, function(feat) {
+            console.log('done');
+            feature_save = feat;
+            update();
+          });
       }
 
       function update() {
@@ -319,8 +334,10 @@
         });
 
         // generate the new features, pre-projected
-        var features = carto(topology, geometries).features;
-        feature_save = features;
+        // var features = carto(topology, geometries).features;
+        // feature_save = features;
+        var features = feature_save;
+        console.log(features);
 
         // update the data
         zips.data(features)
@@ -349,7 +366,7 @@
           clearTimeout(timeout);
           stat.text("calculating...");
           return timeout = setTimeout(function() {
-            update.apply(null, arguments);
+            loadGeom.apply(null, arguments);
           }, 10);
         };
       })();
@@ -401,6 +418,17 @@
             return href + location.hash;
           });
         }
+        }
+
+      function step(cur_step) {
+        if(cur_step == 'start') {
+          } else if(cur_step == 'vacant') {
+          // field = fields[this.selectedIndex];
+          location.hash = "#" + 'vacant_units'
+          } else if(cur_step == 'migration') {
+          // location.hash = "#" + 'netmig/2010'
+          }
+
       }
 
     </script>

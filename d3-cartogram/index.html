@@ -4,10 +4,14 @@
     <title>Cartograms with d3 &amp; TopoJSON</title>
     <meta charset="utf-8">
     <meta property="og:image" content="placeholder.png">
+    <script type="text/javascript">
+      var substeps = ['births', 'migration']
+    </script>
     <script src="lib/d3.v3.min.js"></script>
     <script src="lib/colorbrewer.js"></script>
     <script src="lib/topojson.js"></script>
     <script src="cartogram.js"></script>
+    <script type="text/javascript" src="../js/slide.js"></script>
     <style type="text/css">
 
       body {
@@ -102,32 +106,6 @@
         <img id="placeholder" alt="placeholder image for old browsers" src="placeholder.png">
         <svg id="map"></svg>
       </div>
-      <div id="about">
-        <h2>About</h2>
-        <p><a href="cartogram.js">cartogram.js</a> is a JavaScript implementation of
-        <a href="http://chrisman.scg.ulaval.ca/G360/dougenik.pdf">an algoritm to construct continuous area cartograms</a>,
-        by James A. Dougenik, Nicholas R. Chrisman and Duane R. Niemeyer,
-        &copy;1985 by the Association of American Geographers. This example combines
-        <a href="http://github.com/mbostock/topojson">TopoJSON</a>-encoded 
-        boundaries of the United States from
-        <a href="http://www.naturalearthdata.com/downloads/110m-cultural-vectors/">Natural Earth</a>
-        with
-        <a href="http://www.census.gov/popest/data/state/totals/2011/">2011 US Census population estimates</a>
-        to size each state proportionally.</p>
-        
-        <p>There&rsquo;s also a
-        <a class="hashish" href="?segmentized">segmentized topology</a>,
-        which distorts the shapes more fluidly than the
-        <a class="hashish" href="?">original</a>.</p>
-
-        <p>Designed and built but <a href="http://stamen.com/studio/shawn">Shawn Allen</a> at
-        <a href="http://stamen.com">Stamen</a>.
-        <a href="http://d3js.org">d3.js</a> does most of the heavy lifting;
-        colors by <a href="http://colorbrewer2.org">colorbrewer</a>.</p>
-      </div>
-
-      <a href="https://github.com/shawnbot/d3-cartogram/"><img style="position: absolute; top: 0; right: 0; border: 0;" src="https://s3.amazonaws.com/github/ribbons/forkme_right_gray_6d6d6d.png" alt="Fork me on GitHub"></a>
-    </div>
     <script>
 
       // hide the form if the browser doesn't do SVG,
@@ -417,6 +395,17 @@
             return href + location.hash;
           });
         }
+        }
+
+      function step(cur_step) {
+        if(cur_step == 'start') {
+          } else if(cur_step == 'births') {
+          // field = fields[this.selectedIndex];
+          location.hash = "#" + 'births/2010'
+          } else if(cur_step == 'migration') {
+          location.hash = "#" + 'netmig/2010'
+          }
+
       }
 
     </script>
