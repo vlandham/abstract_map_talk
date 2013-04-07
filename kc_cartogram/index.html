@@ -334,10 +334,10 @@
         });
 
         // generate the new features, pre-projected
-        // var features = carto(topology, geometries).features;
+        var features = carto(topology, geometries).features;
         // feature_save = features;
-        var features = feature_save;
-        console.log(features);
+        // var features = feature_save;
+        // console.log(features);
 
         // update the data
         zips.data(features)
