@@ -33,6 +33,11 @@ var previous = d3.select("#previous"),
         case 39: // right arrow
         case 32: // space
         case 34: { // page down
+          sendSubstep();
+          // step(+1);
+          break;
+        }
+        case 78: { // n
           step(+1);
           break;
         }
