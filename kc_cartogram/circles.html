@@ -115,7 +115,9 @@ window.onhashchange = function() {
 var width = 960,
     height = 700;
 
-var topo;
+    var topo;
+
+    var zips;
 
 var proj = d3.geo.albersUsa()
   .translate([-1450, 1150]).scale(42000);
