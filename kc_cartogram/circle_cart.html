@@ -223,7 +223,9 @@ var proj = d3.geo.albersUsa()
         node = svg.selectAll("circle")
         .data(force.nodes());
 
-        console.log(force.nodes());
+        /* console.log(force.nodes()); */
+
+        /* addCircles(); */
 
 
       });
@@ -255,6 +257,7 @@ var proj = d3.geo.albersUsa()
             .duration(750)
             .ease("linear")
             .attr("fill", "#fafafa")
+            .attr("fill", function(d) { console.log(d); return (d.properties['GEO.id2'].substring(0,2) == '66') ? "#F38630" : '#A7DBD8'; })
             .attr("r", function(d) { return Math.sqrt(path.area(d) / Math.PI); })
             .each("start", function(d) { d.r = Math.sqrt(path.area(d) / Math.PI); });
 
