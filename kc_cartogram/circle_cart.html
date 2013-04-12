@@ -1,0 +1,361 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+<style>
+  svg {
+    display:block;
+    margin:auto;
+  }
+circle {
+  /* fill: none; */
+  stroke: steelblue;
+}
+
+path {
+  fill: #ccc;
+  stroke: #fff;
+  stroke-width: .5px;
+}
+
+#scale_title {
+  font-weight: bold;
+  text-align: right;
+  font-size: inherit;
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  position: absolute;
+  font-size: 24px;
+  margin-right: 20px;
+
+  /* float:right; */
+  /* margin-right: 20px; */
+  /* position: absolute; */
+  /* left: 50%; */
+  /* width:800px; */
+  /* margin-left: 400px */
+  /* bottom: 50px; */
+  /* margin:auto; */
+  /* text-align:center; */
+  /* margin-top: -60px; */
+}
+
+
+</style>
+<body>
+      <form>
+        <p>
+          <label>Scale by <select id="field"></select></label>
+        </p>
+      </form>
+      <h2 id="scale_title"></h2>
+      <div id="map-container">
+        <svg id="map"></svg>
+      </div>
+    </div>
+    <script type="text/javascript">
+      var substeps = ['start', 'total', 'vacant']
+    </script>
+  
+    <script src="lib/d3.v3.min.js"></script>
+    <script src="lib/colorbrewer.js"></script>
+    <script src="lib/topojson.js"></script>
+
+    <script type="text/javascript" src="../js/slide.js"></script>
+<script>
+
+      var percent = (function() {
+            var fmt = d3.format(".2f");
+            return function(n) { return fmt(n) + "%"; };
+          })(),
+          fields = [
+            {name: "No Scale", id: "none"},
+            // {name: "Census Population", id: "censuspop", key: "CENSUS%dPOP", years: [2010]},
+            // {name: "Estimate Base", id: "censuspop", key: "ESTIMATESBASE%d", years: [2010]},
+            {name: "Total Housing Units", id: "total_units", key: "HC01_VC03", format: "+,"},
+            // {name: "Occupied Housing Units", id: "occupied_units", key: "HC01_VC04", format: "+,"},
+            {name: "Vacant Housing Units", id: "vacant_units", key: "HC01_VC05", format: "+,"},
+            // {name: "Percent Vacant", id: "per_vac", key: "HC03_VC05", format: percent},
+            // {name: "Population Change", id: "popchange", key: "NPOPCHG_%d", format: "+,"},
+            // {name: "Births", id: "births", key: "BIRTHS%d"},
+            // {name: "Deaths", id: "deaths", key: "DEATHS%d"},
+            // {name: "Natural Increase", id: "natinc", key: "NATURALINC%d", format: "+,"},
+            // {name: "Death Rate", id: "deathrate", key: "RDEATH%d", years: [2011], format: percent}
+          ],
+          years = [2010, 2011],
+          fieldsById = d3.nest()
+            .key(function(d) { return d.id; })
+            .rollup(function(d) { return d[0]; })
+            .map(fields),
+          field = fields[0],
+          year = years[0],
+          colors = colorbrewer.RdYlBu[3]
+            .reverse()
+            .map(function(rgb) { return d3.hsl(rgb); });
+
+      var body = d3.select("body"),
+          stat = d3.select("#status");
+      var fieldSelect = d3.select("#field")
+        .on("change", function(e) {
+          field = fields[this.selectedIndex];
+          location.hash = "#" + [field.id, year].join("/");
+        });
+
+      fieldSelect.selectAll("option")
+        .data(fields)
+        .enter()
+        .append("option")
+          .attr("value", function(d) { return d.id; })
+          .text(function(d) { return d.name; });
+
+window.onhashchange = function() {
+            parseHash();
+          };
+  
+
+var width = 960,
+height = 700,
+padding = 3;
+
+    var topo;
+
+    var node;
+    var nodes;
+
+var svg = d3.select("#map-container svg")
+    .attr("width", width)
+    .attr("height", height);
+
+var force = d3.layout.force()
+    .charge(0)
+    .gravity(0)
+    .size([width, height]);
+
+var proj = d3.geo.albersUsa()
+  .translate([-1450, 1150]).scale(42000);
+
+  var path = d3.geo.path()
+    .projection(proj);
+  
+
+  function tick(e) {
+    node.each(gravity(e.alpha * .1))
+        .each(collide(.5))
+        .attr("cx", function(d) { return d.x; })
+        .attr("cy", function(d) { return d.y; });
+  }
+
+  function gravity(k) {
+    return function(d) {
+      d.x += (d.x0 - d.x) * k;
+      d.y += (d.y0 - d.y) * k;
+    };
+  }
+
+  function collide(k) {
+    var q = d3.geom.quadtree(nodes);
+    return function(node) {
+      var nr = node.r + padding,
+          nx1 = node.x - nr,
+          nx2 = node.x + nr,
+          ny1 = node.y - nr,
+          ny2 = node.y + nr;
+      q.visit(function(quad, x1, y1, x2, y2) {
+        if (quad.point && (quad.point !== node)) {
+          var x = node.x - quad.point.x,
+              y = node.y - quad.point.y,
+              l = x * x + y * y,
+              r = nr + quad.point.r;
+          if (l < r * r) {
+            l = ((l = Math.sqrt(l)) - r) / l * k;
+            node.x -= x *= l;
+            node.y -= y *= l;
+            quad.point.x += x;
+            quad.point.y += y;
+          }
+        }
+        return x1 > nx2 || x2 < nx1 || y1 > ny2 || y2 < ny1;
+      });
+    };
+  }
+
+
+    d3.json("data/zipcodes_filter_scoped_topo.json", function(error, us) {
+        var geometries = us.objects.zipcodes_filter_scoped.geometries;
+        var all_ids = geometries.map(function(d) { return d.id;});
+      
+      d3.csv("data/census_5year_housing_stats.csv", function(data) {
+        rawData = data.filter(function(d) { return (all_ids.indexOf(d["GEO.id2"]) != -1);});
+        dataById = d3.nest()
+        .key(function(d) { return d['GEO.id2']; })
+        .rollup(function(d) { return d[0]; })
+        .map(data);
+
+        nodes = [];
+        topojson.object(us, us.objects.zipcodes_filter_scoped).geometries.forEach(function(g) {
+          g.centering = path.centroid(g);
+          g.x = g.centering[0];
+          g.x0 = g.centering[0];
+          g.y = g.centering[1];
+          g.y0 = g.centering[1];
+          g.r = Math.sqrt(path.area(g) / Math.PI);
+
+          var geoData = dataById[g.id];
+          if(!geoData) {
+            console.log('no data');
+            } else {
+            g.properties = geoData;
+          }
+          nodes.push(g);
+        });
+
+        /* nodes = topojson.object(us, us.objects.zipcodes_filter_scoped).geometries; */
+
+        force
+          .nodes(nodes)
+          .on('tick', tick);
+          
+
+        /* var paths = svg.selectAll("path") */
+        /* .data(topojson.object(us, us.objects.zipcodes_filter_scoped).geometries) */
+        /* .enter().append("path") */
+        /* .attr("d", path); */
+
+        node = svg.selectAll("circle")
+        .data(force.nodes());
+
+        console.log(force.nodes());
+
+
+      });
+    });
+
+    function addCircles() {
+        node.enter().append("circle")
+        /* .attr("transform", function(d) { return "translate(" + path.centroid(d) + ")"; }) */
+        .attr("r", function(d) { return d.r; });
+        force.start();
+        parseHash();
+    }
+
+      var hashish = d3.selectAll("a.hashish")
+        .datum(function() {
+          return this.href;
+        });
+    
+      function reset() {
+        stat.text("");
+        body.classed("updating", false);
+
+        d3.select("#scale_title").html(field.name);
+        var path = d3.geo.path()
+              .projection(proj);
+
+        node
+          .transition()
+            .duration(750)
+            .ease("linear")
+            .attr("fill", "#fafafa")
+            .attr("r", function(d) { return Math.sqrt(path.area(d) / Math.PI); })
+            .each("start", function(d) { d.r = Math.sqrt(path.area(d) / Math.PI); });
+
+            force.start();
+
+        node.select("title")
+        .text(function(d) {
+            return d.properties["GEO.id2"];
+          });
+      }
+
+      function update() {
+
+        var key = field.key.replace("%d", year),
+            fmt = (typeof field.format === "function")
+              ? field.format
+              : d3.format(field.format || ","),
+            value = function(d) {
+              return +d.properties[key];
+            };
+            console.log(key);
+            d3.select("#scale_title").html(field.name);
+            var values = node.data()
+              .map(value)
+              .filter(function(n) {
+                return !isNaN(n);
+              })
+              .sort(d3.ascending),
+            lo = values[0],
+            hi = values[values.length - 1];
+            console.log("lo: " + lo + " hi: " + hi);
+
+        var color = d3.scale.linear()
+          .range(colors)
+          .domain(lo < 0
+            ? [lo, 0, hi]
+            : [lo, d3.mean(values), hi]);
+
+        // normalize the scale to positive numbers
+        var scale = d3.scale.linear()
+          .domain([lo, hi])
+          .range([500, 3000]);
+          
+        node
+          .transition()
+            .duration(750)
+            .ease("linear")
+            .attr("fill", function(d) { return color(+d.properties[key]);})
+            .attr("r", function(d) { return Math.sqrt(scale(+d.properties[key]) / Math.PI); })
+            .each("start", function(d) { d.r = Math.sqrt(scale(+d.properties[key]) / Math.PI); });
+
+        force.start();
+      }    
+
+      var deferredUpdate = (function() {
+        var timeout;
+        return function() {
+          var args = arguments;
+          clearTimeout(timeout);
+          stat.text("calculating...");
+          return timeout = setTimeout(function() {
+            update.apply(null, arguments);
+          }, 10);
+        };
+      })();
+
+        function parseHash() {
+          console.log("parse hash");
+        var parts = location.hash.substr(1).split("/"),
+            desiredFieldId = parts[0],
+            desiredYear = +parts[1];
+
+        field = fieldsById[desiredFieldId] || fields[0];
+        year = (years.indexOf(desiredYear) > -1) ? desiredYear : years[0];
+
+        fieldSelect.property("selectedIndex", fields.indexOf(field));
+
+        if (field.id === "none") {
+          reset();
+
+        } else {
+        deferredUpdate();
+        location.replace("#" + [field.id].join("/"));
+
+          hashish.attr("href", function(href) {
+            return href + location.hash;
+          });
+        }
+      }
+
+      function step(cur_step) {
+        if(cur_step == 'start') {
+          addCircles();
+          } else if(cur_step == 'total') {
+          // field = fields[this.selectedIndex];
+          location.hash = "#" + 'total_units'
+          } else if(cur_step == 'vacant') {
+          location.hash = "#" + 'vacant_units'
+          }
+
+      }
+
+</script>
+
