@@ -48,6 +48,12 @@ blockquote {
 body > ul {
   margin: 0;
   padding: 0;
+  padding-left: 20px;
+}
+
+ul {
+
+  margin-left: 20px;
 }
 
 .highlight {

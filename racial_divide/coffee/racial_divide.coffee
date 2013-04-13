@@ -219,11 +219,24 @@ $ ->
     if cur_step == 'start'
       window.city_view.start()
     if cur_step == 'zoom_first'
+      # console.log('zoom')
+      # window.city_view.zoom("29095007500")
+      # window.city_view.zoom("29095006300")
+      # window.city_view.zoom("29095006500")
+      # window.city_view.zoom("29095006600")
+      # window.city_view.zoom("29095006700")
+      # window.city_view.zoom("29095007400")
+      # window.city_view.zoom("29095007500")
+      # window.city_view.zoom("29095008000")
+      # window.city_view.zoom("29095008200")
+      # window.city_view.zoom("29095008600")
+      # window.city_view.zoom("29095016900")
       window.city_view.zoom("20209043301")
     if cur_step == 'zoom_op'
-      window.city_view.zoom("20091051200")
+      window.city_view.zoom("20091051902")
     if cur_step == 'zoom_current'
-      window.city_view.zoom("29095006500")
+      window.city_view.zoom("29095008100")
+      # window.city_view.zoom("29095006500")
     if cur_step == 'zoom_out'
       window.city_view.zoom(null)
 
