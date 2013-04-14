@@ -126,8 +126,10 @@ function ready(error, v,s,e,n) {
 		.text(function(d) {return d.name;})
 
 	d3.selectAll(".staCircles")
-		.on("click",function(d) {
+		.on("click",function(d, i) {
 			console.log("clicked on a station")
+			console.log(d)
+      console.log(i)
 			repos(n,e,s,v,d,dist);
 		})
 		
@@ -621,3 +623,18 @@ function distll(s1,s2) {
 
 	return acos(sin(a)*sin(b)+cos(a)*cos(b)*cos(c-d));
 }
+
+function step(cur_step) {
+  if(cur_step == 'start') {
+    d = stations[56];
+			repos(nodes,edges,stations,votes,d,dist);
+    
+    // addCircles();
+  } else if(cur_step == 'next') {
+    d = stations[245];
+			repos(nodes,edges,stations,votes,d,dist);
+  } else if(cur_step == 'vacant') {
+  }
+
+}
+
