@@ -2,8 +2,8 @@ body {
   background: #fff;
   position: relative;
   width: 100%;
-  width: 1280px;
-  height: 800px;
+  width: 1024px;
+  height: 768px;
   margin: auto;
   overflow: hidden;
 }
@@ -12,8 +12,8 @@ iframe {
   border: none;
   /* border: 2px solid black; */
   position: absolute;
-  width: 1280px;
-  height: 800px;
+  width: 1024px;
+  height: 768px;
   /* margin: auto; */
   /* width: 100%; */
   /* height: 100%; */

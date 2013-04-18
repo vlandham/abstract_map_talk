@@ -15,8 +15,8 @@ gray = "#303031"
 stroke_color = salmon
 stroke1_color = gray
 
-width = 1280
-height = 800
+width = 980
+height = 700
 
 padding = 25
 

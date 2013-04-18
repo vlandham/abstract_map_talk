@@ -47,7 +47,7 @@ edge = (a, b) ->
 class CityView
   constructor: (@name, @x, @y, @scale) ->
     @width = 1000
-    @height = 650
+    @height = 590
     @csv_data = {}
     @color = null
     @all_node = []
