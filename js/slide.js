@@ -3,15 +3,13 @@ if(typeof this.substeps == 'undefined') {
   this.substeps = [];
 }
 
-var src = null;
 var parentWindow = window.parent;
 
 window.onload = setup;
 
 function setup() {
-  src = parentWindow.document.getElementById(window.name).src;
   // setupCode();
-  
+
   window.onmessage = receiveMessage;
 }
 
@@ -49,7 +47,6 @@ function receiveMessage(e) {
       this.code.classed('hide', !isOn);
     }
   } else if(e.data.type == 'substep') {
-    // console.log('update:' + src);
     var cur_step = this.substeps.shift();
     if(typeof step == 'function' && typeof cur_step != 'undefined') {
       step(cur_step);
